@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TweetFeedTestApp</string>
+    <string name="search_hint">Search tweets..!</string>
+    <string name="main_title">Tweet Feed</string>
+</resources>
