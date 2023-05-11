@@ -4,4 +4,5 @@
     <string name="main_title">Tweet Feed</string>
     <string name="retry_button_text">Retry</string>
     <string name="connection_status_text">Connection status: </string>
+    <string name="search_for_some_tweets">Search for some tweets... :)</string>
 </resources>
