@@ -1,43 +1,39 @@
 package hu.gyadam.tweetfeedtestapp.presentation.tweetFeedScreen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import hu.gyadam.tweetfeedtestapp.R
-import hu.gyadam.tweetfeedtestapp.domain.observer.ConnectivityObserver
+import hu.gyadam.tweetfeedtestapp.presentation.tweetFeedScreen.components.ErrorComponent
+import hu.gyadam.tweetfeedtestapp.presentation.tweetFeedScreen.components.HeaderComponent
 import hu.gyadam.tweetfeedtestapp.presentation.tweetFeedScreen.components.SearchTextField
 import hu.gyadam.tweetfeedtestapp.presentation.tweetFeedScreen.components.TweetCard
 import hu.gyadam.tweetfeedtestapp.presentation.util.LocalSpacing
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TweetFeed(
     viewModel: TweetFeedViewModel = hiltViewModel(),
 ) {
     val spacing = LocalSpacing.current
-    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = true) {
         viewModel.onEvent(TweetFeedEvent.ObserveConnectivity(context))
     }
@@ -46,34 +42,19 @@ fun TweetFeed(
             .padding(spacing.spaceMedium)
             .fillMaxSize()
     ) {
-        Text(
-            text = stringResource(id = R.string.main_title),
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Start
-        )
-        Spacer(modifier = Modifier.height(spacing.spaceMedium))
-        Row {
-            Text(
-                text = stringResource(id = R.string.connection_status_text),
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Start
-            )
-            Text(
-                text = state.status.name,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    if (state.status.equals(ConnectivityObserver.Status.Available)) Color.Green else Color.Red,
-                ),
-                textAlign = TextAlign.Start
-            )
-        }
-
+        HeaderComponent(status = state.status.name)
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
         SearchTextField(
-            text = "",
-            onValueChange = {},
-            onSearch = { /*TODO*/ },
-            onFocusChanged = {},
-            shouldShowHint = true
+            text = state.query,
+            onValueChange = { viewModel.onEvent(TweetFeedEvent.OnQueryChange(it)) },
+            onSearch = {
+                keyboardController?.hide()
+                viewModel.onEvent(TweetFeedEvent.GetTweetFeed)
+            },
+            onFocusChanged = {
+                viewModel.onEvent(TweetFeedEvent.OnSearchFocusChange(it.isFocused))
+            },
+            shouldShowHint = state.isHintVisible
         )
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
         if (state.isLoading) {
@@ -85,17 +66,11 @@ fun TweetFeed(
                 CircularProgressIndicator()
             }
         } else if (state.error.isNotEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(text = "Error : ${state.error}")
-                Button(onClick = { viewModel.onEvent(TweetFeedEvent.GetTweetFeed) }) {
-                    Text(text = stringResource(id = R.string.retry_button_text))
-                }
-            }
+            ErrorComponent(
+                errorText = state.error,
+                getTweets = { viewModel.onEvent(TweetFeedEvent.GetTweetFeed) })
+
+
         } else {
             LazyColumn {
                 val tweets = state.tweets
