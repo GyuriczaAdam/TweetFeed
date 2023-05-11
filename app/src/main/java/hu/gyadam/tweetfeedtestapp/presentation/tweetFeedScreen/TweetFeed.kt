@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,28 +59,43 @@ fun TweetFeed(
             shouldShowHint = state.isHintVisible
         )
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+        when {
+            state.isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
-        } else if (state.error.isNotEmpty()) {
-            ErrorComponent(
+
+            state.error.isNotEmpty() -> ErrorComponent(
                 errorText = state.error,
-                getTweets = { viewModel.onEvent(TweetFeedEvent.GetTweetFeed) })
+                getTweets = { viewModel.onEvent(TweetFeedEvent.GetTweetFeed) }
+            )
 
-
-        } else {
-            LazyColumn {
-                val tweets = state.tweets
-                items(tweets.size) {
-                    TweetCard(
-                        title = tweets[it].tweetTag,
-                        description = tweets[it].tweetText,
-                        modifier = Modifier.padding(16.dp)
+            state.tweets.isNotEmpty() -> {
+                LazyColumn {
+                    val tweets = state.tweets
+                    items(tweets.size) {
+                        TweetCard(
+                            title = tweets[it].tweetTag,
+                            description = tweets[it].tweetText,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
+            else -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Search for some tweets... :)",
+                        style = MaterialTheme.typography.headlineSmall
                     )
                 }
             }

@@ -24,7 +24,7 @@ fun ErrorComponent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = "Error : ${errorText}")
-        Button(onClick = { getTweets }) {
+        Button(onClick =  getTweets ) {
             Text(text = stringResource(id = R.string.retry_button_text))
         }
     }

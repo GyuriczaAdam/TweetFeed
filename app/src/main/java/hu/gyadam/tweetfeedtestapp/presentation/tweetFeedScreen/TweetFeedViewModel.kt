@@ -49,6 +49,16 @@ class TweetFeedViewModel @Inject constructor(
                     }
                     if (connectionStatus != ConnectivityObserver.Status.Available) {
                         stopTweetFeed()
+                    }else {
+                        if(state.value.tweets.isNotEmpty()) {
+                            state.update {
+                                it.copy(
+                                    tweets = emptyList(),
+                                    isLoading = true
+                                )
+                            }
+                            tryToGetTweets()
+                        }
                     }
                 }
         }
@@ -57,6 +67,7 @@ class TweetFeedViewModel @Inject constructor(
 
     private fun getTweetFeed() {
         observerTweetLifeSpawn()
+        tweetFeedJob?.cancel()
         tweetFeedJob = viewModelScope.async {
             recieveTweetStream(REQUEST_HEADER)
                 .collectLatest { result ->
@@ -99,13 +110,14 @@ class TweetFeedViewModel @Inject constructor(
 
     private fun tryToGetTweets() {
         viewModelScope.launch {
-            delay(10.seconds)
-            stopTweetFeed()
+            //If I do not put a delay then it will return an error because it is too fast for the api
+            delay(5.seconds)
             getTweetFeed()
         }
     }
 
     private fun observerTweetLifeSpawn() {
+        lifeSpawnJob?.cancel()
         lifeSpawnJob = viewModelScope.async {
             while (true) {
                 delay(1.seconds)
@@ -124,8 +136,6 @@ class TweetFeedViewModel @Inject constructor(
     private fun stopTweetFeed() {
         lifeSpawnJob?.cancel()
         tweetFeedJob?.cancel()
-        lifeSpawnJob = null
-        tweetFeedJob = null
     }
 
     private fun isLongPropertyExpired(tweet: LoadedTweetModel): Boolean {
