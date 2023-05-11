@@ -2,4 +2,6 @@
     <string name="app_name">TweetFeedTestApp</string>
     <string name="search_hint">Search tweets..!</string>
     <string name="main_title">Tweet Feed</string>
+    <string name="retry_button_text">Retry</string>
+    <string name="connection_status_text">Connection status: </string>
 </resources>
