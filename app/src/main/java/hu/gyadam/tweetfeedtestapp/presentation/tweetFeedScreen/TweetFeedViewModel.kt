@@ -52,7 +52,15 @@ class TweetFeedViewModel @Inject constructor(
     private var tweetFeedJob: Job? = null
     private var lifeSpawnJob: Job? = null
 
-    fun observeConnectivity(context: Context) {
+
+    fun onEvent(event: TweetFeedEvent) {
+        when (event) {
+            is TweetFeedEvent.ObserveConnectivity -> observeConnectivity(event.context)
+            TweetFeedEvent.GetTweetFeed -> getTweetFeed()
+        }
+    }
+
+    private fun observeConnectivity(context: Context) {
         viewModelScope.launch {
             connectivityObserver.observer(context = context)
                 .collectLatest { connectionStatus ->
@@ -70,7 +78,7 @@ class TweetFeedViewModel @Inject constructor(
     }
 
 
-    fun getTweetFeed() {
+    private fun getTweetFeed() {
         tweetFeedJob = viewModelScope.async {
             recieveTweetStream(REQUEST_HEADER)
                 .collectLatest { result ->

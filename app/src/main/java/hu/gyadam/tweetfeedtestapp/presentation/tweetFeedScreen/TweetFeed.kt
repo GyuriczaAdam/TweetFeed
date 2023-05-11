@@ -45,24 +45,22 @@ fun TweetFeed(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LaunchedEffect(key1 = true) {
-        viewModel.observeConnectivity(context = context)
+        viewModel.onEvent(TweetFeedEvent.ObserveConnectivity(context))
     }
-
     Column(
         modifier = Modifier
             .padding(spacing.spaceMedium)
             .fillMaxSize()
     ) {
-            Text(
-                text = stringResource(id = R.string.main_title),
-                style = MaterialTheme.typography.headlineLarge,
-                textAlign = TextAlign.Start
-            )
+        Text(
+            text = stringResource(id = R.string.main_title),
+            style = MaterialTheme.typography.headlineLarge,
+            textAlign = TextAlign.Start
+        )
         Spacer(modifier = Modifier.height(spacing.spaceMedium))
         Row {
-
             Text(
-                text = "Connection status : ",
+                text = stringResource(id = R.string.connection_status_text),
                 style = MaterialTheme.typography.headlineMedium,
                 textAlign = TextAlign.Start
             )
@@ -100,8 +98,8 @@ fun TweetFeed(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(text = "Error : ${state.error}")
-                Button(onClick = viewModel::getTweetFeed) {
-                    Text(text = "Retry")
+                Button(onClick = { viewModel.onEvent(TweetFeedEvent.GetTweetFeed) }) {
+                    Text(text = stringResource(id = R.string.retry_button_text))
                 }
             }
         } else {
