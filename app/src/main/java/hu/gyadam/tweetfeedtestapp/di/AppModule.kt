@@ -1,14 +1,18 @@
 package hu.gyadam.tweetfeedtestapp.di
 
+import android.content.Context
 import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import hu.gyadam.tweetfeedtestapp.BuildConfig
+import hu.gyadam.tweetfeedtestapp.data.observer.ConnectivityObserverImpl
 import hu.gyadam.tweetfeedtestapp.data.remote.TwitterApi
 import hu.gyadam.tweetfeedtestapp.data.repository.TweetRepostioryImpl
+import hu.gyadam.tweetfeedtestapp.domain.observer.ConnectivityObserver
 import hu.gyadam.tweetfeedtestapp.domain.repository.TweetRepository
+import hu.gyadam.tweetfeedtestapp.domain.useCase.RecieveTweetStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import okhttp3.OkHttpClient
@@ -27,6 +31,7 @@ object AppModule {
     val client = OkHttpClient.Builder()
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
+
     @Provides
     @Singleton
     fun provideTwitterApi(): TwitterApi = Retrofit.Builder()
@@ -39,4 +44,15 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTweetRepository(api: TwitterApi): TweetRepository = TweetRepostioryImpl(api)
+
+
+    @Provides
+    @Singleton
+    fun provideRecieveTweetStream(repository: TweetRepository): RecieveTweetStream =
+        RecieveTweetStream(repository)
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(): ConnectivityObserver =
+        ConnectivityObserverImpl()
 }
